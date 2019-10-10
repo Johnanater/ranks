@@ -1,88 +1,58 @@
-﻿using Rocket.API;
+﻿using System.Collections.Generic;
+using Rocket.API;
 using Rocket.Unturned.Chat;
-using System.Collections.Generic;
+using Rocket.Unturned.Player;
 using UnityEngine;
 
 namespace Ranks
 {
     class CommandAdd : IRocketCommand
     {
-        public AllowedCaller AllowedCaller
-        {
-            get
-            {
-                return AllowedCaller.Player;
-            }
-        }
+        public AllowedCaller AllowedCaller => AllowedCaller.Both;
 
-        public string Name
-        {
-            get
-            {
-                return "add";
-            }
-        }
+        public string Name => "add";
 
-        public string Help
-        {
-            get
-            {
-                return "Add a player to the ranks database";
-            }
-        }
+        public string Help => "Add a player to the ranks database";
 
-        public string Syntax
-        {
-            get
-            {
-                return "/add (Steam64) (Rank) (Name - Optional)";
-            }
-        }
+        public string Syntax => "/add <player/steam64> <rank>";
 
-        public List<string> Aliases
-        {
-            get
-            {
-                return new List<string>();
-            }
-        }
-        public List<string> Permissions
-        {
-            get
-            {
-                return new List<string>()
-                {
-                    "ranks.add"
-                };
-            }
-        }
+        public List<string> Aliases => new List<string>();
 
-        public void Execute(IRocketPlayer caller, string[] command)
+        public List<string> Permissions => new List<string> { "ranks.add" };
+
+        public async void Execute(IRocketPlayer caller, string[] command)
         {
-            if (Ranks.Instance.Configuration.Instance.RanksDatabase.EnableCommands == true)
+            if (!Main.Config.EnableCommands)
             {
-                if (!(command.Length < 1))
-                {
-                    if (command.Length > 2)
-                    {
-                        Ranks.Instance.Utils.AddRank(command[0], command[2], command[1]);
-						UnturnedChat.Say(caller, Ranks.Instance.Translate("ranks_addedmsg"), Color.green);
-                    }
-                    else
-                    {
-                        Ranks.Instance.Utils.AddRank(command[0], "0", command[1]);
-						UnturnedChat.Say(caller, Ranks.Instance.Translate("ranks_addedmsg"), Color.green);
-                    }
-                }
-                else
-                {
-                    UnturnedChat.Say(caller, Syntax, Color.red);
-                }
+                UnturnedChat.Say(caller, Main.Instance.Translate("cmds_not_enabled"), Color.red);
+                return;
+            }
+
+            if (command.Length < 2)
+            {
+                UnturnedChat.Say(caller, Syntax, Color.red);
+                return;
+            }
+
+            string steam64 = "";
+            string name = "";
+            string rank = command[1];
+
+            // Check if command[0] is a player's name
+            UnturnedPlayer targetPlayer = UnturnedPlayer.FromName(command[0]);
+
+            if (targetPlayer?.Player)
+            {
+                steam64 = targetPlayer.Id;
+                name = targetPlayer.DisplayName;
             }
             else
             {
-                UnturnedChat.Say(caller, Ranks.Instance.Translate("ranks_cmdsnotenabled"), Color.red);
+                steam64 = command[0];
             }
+
+            await Main.Instance.AddToRank(steam64, name, rank);
+			UnturnedChat.Say(caller, Main.Instance.Translate("has_been_added_to", steam64, rank), Color.green);
         }
     }
 }
