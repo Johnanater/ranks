@@ -18,7 +18,7 @@ namespace Ranks
         public static Main Instance;
         public static Configuration Config;
         public static MySQLUtils MySQLUtils;
-        public const string Version = "1.1.0.0";
+        public const string Version = "1.1.1";
 
         protected override void Load()
         {
@@ -54,7 +54,7 @@ namespace Ranks
             {
                 // Check if player already has that rank
                 if (playerGroups.Any(pg => pg.Id.Equals(playerRank)) && IsWhitelisted(playerRank))
-                    return; 
+                    break; 
 
                 // Else, give them the rank
                 if (IsWhitelisted(playerRank))
