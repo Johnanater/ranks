@@ -18,7 +18,7 @@ namespace Ranks
         public static Main Instance;
         public static Configuration Config;
         public static MySQLUtils MySQLUtils;
-        public const string Version = "1.1.1";
+        public const string Version = "1.1.2";
 
         protected override void Load()
         {

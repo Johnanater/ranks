@@ -11,7 +11,6 @@ namespace Ranks
     {
         internal MySQLUtils()
         {
-            new I18N.West.CP1250();
             MySqlConnection connection = CreateConnection();
             try
             {
@@ -117,9 +116,9 @@ namespace Ranks
 
                     command.Parameters.AddWithValue("@Steam64", steam64);
                     await connection.OpenAsync();
-                    MySqlDataReader dataReader = await command.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow);
+                    var dataReader = await command.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow);
 
-                    while (dataReader.Read())
+                    while (await dataReader.ReadAsync())
                     {
                         output = Convert.ToString(dataReader["ranks"]);
                     }
