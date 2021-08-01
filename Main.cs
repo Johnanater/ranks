@@ -8,6 +8,7 @@ using Rocket.Core.Permissions;
 using Rocket.Core.Plugins;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
+using Steamworks;
 using Logger = Rocket.Core.Logging.Logger;
 
 namespace Ranks
@@ -18,7 +19,7 @@ namespace Ranks
         public static Main Instance;
         public static Configuration Config;
         public static MySQLUtils MySQLUtils;
-        public const string Version = "1.1.2";
+        public const string Version = "1.1.3";
 
         protected override void Load()
         {
@@ -33,13 +34,13 @@ namespace Ranks
         
         protected override void Unload()
         {
-
+            Provider.onServerConnected -= OnServerConnected;
         }
         
-        private async void OnServerConnected(Steamworks.CSteamID steamId)
+        private void OnServerConnected(CSteamID steamId)
         {
-            UnturnedPlayer untPlayer = UnturnedPlayer.FromCSteamID(steamId);
-            await CheckForRanks(untPlayer);
+            var untPlayer = UnturnedPlayer.FromCSteamID(steamId);
+            Task.Run(() => CheckForRanks(untPlayer));
         }
 
         // Check players ranks to be added or removed
@@ -54,7 +55,7 @@ namespace Ranks
             {
                 // Check if player already has that rank
                 if (playerGroups.Any(pg => pg.Id.Equals(playerRank)) && IsWhitelisted(playerRank))
-                    break; 
+                    continue; 
 
                 // Else, give them the rank
                 if (IsWhitelisted(playerRank))
